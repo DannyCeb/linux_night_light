@@ -50,7 +50,7 @@ fn main() {
             bool_night = false;
             bool_day = true;
         // Check if day gamma needs to be set
-        } else if bool_day {
+        } else if (hour <= night_start || hour >= night_end) && bool_day {
             // Set the day gamma
             Command::new("xrandr")
                 .arg("--output")
