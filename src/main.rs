@@ -1,6 +1,5 @@
-use std::{env, process::Command, thread, time::Duration};
-
 use chrono::{Local, Timelike};
+use std::{env, process::Command, thread, time::Duration};
 
 fn main() {
     // Get command-line arguments
@@ -28,10 +27,17 @@ fn main() {
         std::process::exit(1);
     }
 
+    // Boolean flags to track if night or day gamma was set
+    let mut bool_night = true;
+    let mut bool_day = true;
+
     loop {
+        // Get the current hour
         let hour = Local::now().hour();
 
-        if hour >= night_start || hour <= night_end {
+        // Check if the current hour is within the night range and night gamma needs to be set
+        if (hour >= night_start || hour <= night_end) && bool_night {
+            // Set the night gamma
             Command::new("xrandr")
                 .arg("--output")
                 .arg(monitor)
@@ -39,7 +45,13 @@ fn main() {
                 .arg(night_gamma)
                 .output()
                 .expect("failed to execute process");
-        } else {
+
+            // Update flags
+            bool_night = false;
+            bool_day = true;
+        // Check if day gamma needs to be set
+        } else if bool_day {
+            // Set the day gamma
             Command::new("xrandr")
                 .arg("--output")
                 .arg(monitor)
@@ -47,8 +59,13 @@ fn main() {
                 .arg(day_gamma)
                 .output()
                 .expect("failed to execute process");
+
+            // Update flags
+            bool_day = false;
+            bool_night = true;
         }
 
+        // Sleep for 60 seconds before checking again
         thread::sleep(Duration::from_secs(60));
     }
 }
