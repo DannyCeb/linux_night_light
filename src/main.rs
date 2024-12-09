@@ -22,6 +22,12 @@ fn main() {
     let night_end: u32 = args[4].parse().expect("Invalid night end hour");
     let monitor = &args[5];
 
+    // Validate the night_start and night_end hour values to ensure they are within the range 0 to 23
+    if night_start > 23 || night_end > 23 {
+        eprintln!("Error: Night start and end hours must be between 0 and 23.");
+        std::process::exit(1);
+    }
+
     loop {
         let hour = Local::now().hour();
 
