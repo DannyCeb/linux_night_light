@@ -1,25 +1,44 @@
-use std::{process::Command, thread, time::Duration};
+use std::{env, process::Command, thread, time::Duration};
 
 use chrono::{Local, Timelike};
 
 fn main() {
+    // Get command-line arguments
+    let args: Vec<String> = env::args().collect();
+
+    // Verify that the correct parameters were passed
+    if args.len() != 6 {
+        eprintln!(
+            "Usage: {} <day_gamma> <night_gamma> <night_start_hour> <night_end_hour> <monitor>",
+            args[0]
+        );
+        std::process::exit(1);
+    }
+
+    // Parse the arguments
+    let day_gamma = &args[1];
+    let night_gamma = &args[2];
+    let night_start: u32 = args[3].parse().expect("Invalid night start hour");
+    let night_end: u32 = args[4].parse().expect("Invalid night end hour");
+    let monitor = &args[5];
+
     loop {
         let hour = Local::now().hour();
 
-        if hour >= 19 || hour <= 7 {
+        if hour >= night_start || hour <= night_end {
             Command::new("xrandr")
                 .arg("--output")
-                .arg("eDP")
+                .arg(monitor)
                 .arg("--gamma")
-                .arg("1.0:0.8:0.7")
+                .arg(night_gamma)
                 .output()
                 .expect("failed to execute process");
         } else {
             Command::new("xrandr")
                 .arg("--output")
-                .arg("eDP")
+                .arg(monitor)
                 .arg("--gamma")
-                .arg("1.0:1.0:1.0")
+                .arg(day_gamma)
                 .output()
                 .expect("failed to execute process");
         }
